@@ -1,0 +1,24 @@
+version: '3'
+
+services:
+  builder:
+    image: eyesore/xobuild
+    volumes:
+      - ./:/build
+    links:
+      - pg
+      - mysql
+
+  pg:
+    image: postgres:latest
+    environment:
+      POSTGRES_USER: xodb
+      POSTGRES_PASSWORD: xodb
+
+  mysql:
+    image: mysql:latest
+    environment:
+      MYSQL_ALLOW_EMPTY_PASSWORD: "yes"
+      MYSQL_USER: xodb
+      MYSQL_PASSWORD: xodb
+      MYSQL_DATABASE: xodb
