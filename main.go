@@ -9,14 +9,15 @@ import (
 	"fmt"
 	"io/ioutil"
 	"os"
-	"os/exec"
 	"path"
-	"sort"
 	"strings"
+	"text/template"
 
 	"github.com/eyesore/xo/internal"
 	"github.com/eyesore/xo/models"
 	"github.com/xo/dburl"
+
+	arg "github.com/alexflint/go-arg"
 
 	_ "github.com/eyesore/xo/loaders"
 	_ "github.com/xo/xoutil"
@@ -237,18 +238,19 @@ var files = map[string]*os.File{}
 // getFile builds the filepath from the TBuf information, and retrieves the
 // file from files. If the built filename is not already defined, then it calls
 // the os.OpenFile with the correct parameters depending on the state of args.
-func getFile(args *internal.ArgType, t *internal.TBuf) (*os.File, error) {
+func getFile(args *internal.ArgType, tableName string) (*os.File, error) {
 	var f *os.File
 	var err error
 
 	// determine filename
-	var filename = strings.ToLower(t.Name) + args.Suffix
+	var filename = strings.ToLower(tableName) + args.Suffix
 	if args.SingleFile {
 		filename = args.Filename
 	}
 	filename = path.Join(args.Path, filename)
 
 	// lookup file
+	// TODO - probably remove this file caching, we will only write once per file, I think. DEPRECATED
 	f, ok := files[filename]
 	if ok {
 		return f, nil
@@ -261,14 +263,9 @@ func getFile(args *internal.ArgType, t *internal.TBuf) (*os.File, error) {
 	fi, err := os.Stat(filename)
 	if err == nil && fi.IsDir() {
 		return nil, errors.New("filename cannot be directory")
-	} else if _, ok = err.(*os.PathError); !ok && args.Append && t.TemplateType != internal.XOTemplate {
+	} else if _, ok = err.(*os.PathError); !ok && args.Append {
 		// file exists so append if append is set and not XO type
 		mode = os.O_APPEND | os.O_WRONLY
-	}
-
-	// skip
-	if t.TemplateType == internal.XOTemplate && fi != nil {
-		return nil, nil
 	}
 
 	// open file
@@ -277,86 +274,64 @@ func getFile(args *internal.ArgType, t *internal.TBuf) (*os.File, error) {
 		return nil, err
 	}
 
-	// file didn't originally exist, so add package header
-	if fi == nil || !args.Append {
-		// add build tags
-		if args.Tags != "" {
-			f.WriteString(`// +build ` + args.Tags + "\n\n")
-		}
-
-		// execute
-		err = args.TemplateSet().Execute(f, "xo_package.go.tpl", args)
-		if err != nil {
-			return nil, err
-		}
-	}
-
-	// store file
+	// store file TODO tj - are we using this?
 	files[filename] = f
 
 	return f, nil
 }
 
-// writeTypes writes the generated definitions.
 func writeTypes(args *internal.ArgType) error {
-	var err error
+	for _, tName := range internal.TableTemplateKeys {
+		tableTemplate := internal.GetTableTemplate(tName)
 
-	out := internal.TBufSlice(args.Generated)
-
-	// sort segments
-	sort.Sort(out)
-
-	// loop, writing in order
-	for _, t := range out {
-		var f *os.File
-
-		// skip when in append and type is XO
-		if args.Append && t.TemplateType == internal.XOTemplate {
-			continue
-		}
-
-		// check if generated template is only whitespace/empty
-		bufStr := strings.TrimSpace(t.Buf.String())
-		if len(bufStr) == 0 {
-			continue
-		}
-
-		// get file and filename
-		f, err = getFile(args, &t)
+		masterTemplate, err := tableTemplate.AssociateTemplate(internal.XOTable, tableTemplate)
 		if err != nil {
 			return err
 		}
-
-		// should only be nil when type == xo
-		if f == nil {
-			continue
-		}
-
-		// write segment
-		if !args.Append || (t.TemplateType != internal.TypeTemplate && t.TemplateType != internal.QueryTypeTemplate) {
-			_, err = t.Buf.WriteTo(f)
+		if !args.SingleFile {
+			// write out table template
+			f, err := getFile(args, tableTemplate.T.Name())
 			if err != nil {
 				return err
 			}
+			err = masterTemplate.Execute(f, tableTemplate)
+			f.Close() // TODO check error?
+			if err != nil {
+				return err
+			}
+			continue
 		}
-	}
-
-	// build goimports parameters, closing files
-	params := []string{"-w"}
-	for k, f := range files {
-		params = append(params, k)
-
-		// close
-		err = f.Close()
+		// execute the tt into its own buffer
+		err = masterTemplate.Execute(tableTemplate.Buf, tableTemplate)
 		if err != nil {
 			return err
 		}
 	}
+	if args.SingleFile {
+		// execute the single file template against all previously generated buffers
+		obj := internal.GetSingleFileData()
 
-	// process written files with goimports
-	output, err := exec.Command("goimports", params...).CombinedOutput()
-	if err != nil {
-		return errors.New(string(output))
+		tName := internal.XOSingleFile.String()
+		b, err := args.TemplateLoader(tName)
+		if err != nil {
+			return err
+		}
+
+		masterTemplate, err := template.New(tName).Funcs(internal.Args.NewTemplateFuncs()).Parse(string(b))
+		if err != nil {
+			return err
+		}
+
+		f, err := getFile(args, "") // name will be overwritten anyway
+		if err != nil {
+			return err
+		}
+
+		err = masterTemplate.Execute(f, obj)
+		f.Close() // TODO same error check
+		if err != nil {
+			return err
+		}
 	}
 
 	return nil

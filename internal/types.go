@@ -15,6 +15,9 @@ const (
 	QueryTypeTemplate
 	QueryTemplate
 
+	XOTable
+	XOSingleFile
+
 	// always last
 	XOTemplate
 )
@@ -25,6 +28,10 @@ func (tt TemplateType) String() string {
 	switch tt {
 	case XOTemplate:
 		s = "xo_db"
+	case XOTable:
+		s = "xo_table"
+	case XOSingleFile:
+		s = "xo_sf"
 	case EnumTemplate:
 		s = "enum"
 	case ProcTemplate:

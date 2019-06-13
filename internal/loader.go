@@ -196,7 +196,8 @@ func (tl TypeLoader) ParseQuery(args *ArgType) error {
 	}
 
 	// generate query type template
-	err = args.ExecuteTemplate(QueryTypeTemplate, args.QueryType, "", typeTpl)
+	// err = args.ExecuteTemplate(QueryTypeTemplate, args.QueryType, "", typeTpl)
+	_, err = GetTableTemplate(args.QueryType).AssociateTemplate(QueryTypeTemplate, typeTpl)
 	if err != nil {
 		return err
 	}
@@ -235,7 +236,8 @@ func (tl TypeLoader) ParseQuery(args *ArgType) error {
 	}
 
 	// generate template
-	err = args.ExecuteTemplate(QueryTemplate, args.QueryType, "", queryTpl)
+	// err = args.ExecuteTemplate(QueryTemplate, args.QueryType, "", queryTpl)
+	_, err = GetTableTemplate(args.QueryType).AssociateTemplate(QueryTemplate, queryTpl)
 	if err != nil {
 		return err
 	}
@@ -328,7 +330,8 @@ func (tl TypeLoader) LoadEnums(args *ArgType) (map[string]*Enum, error) {
 
 	// generate enum templates
 	for _, e := range enumMap {
-		err = args.ExecuteTemplate(EnumTemplate, e.Name, "", e)
+		// err = args.ExecuteTemplate(EnumTemplate, e.Name, "", e)
+		_, err = GetTableTemplate(e.Name).AssociateTemplate(EnumTemplate, e)
 		if err != nil {
 			return nil, err
 		}
@@ -415,7 +418,8 @@ func (tl TypeLoader) LoadProcs(args *ArgType) (map[string]*Proc, error) {
 
 	// generate proc templates
 	for _, p := range procMap {
-		err = args.ExecuteTemplate(ProcTemplate, "sp_"+p.Name, "", p)
+		// err = args.ExecuteTemplate(ProcTemplate, "sp_"+p.Name, "", p) // TODO tj (is the sp_ important?)
+		_, err = GetTableTemplate(p.Name).AssociateTemplate(ProcTemplate, p)
 		if err != nil {
 			return nil, err
 		}
@@ -489,7 +493,8 @@ func (tl TypeLoader) LoadRelkind(args *ArgType, relType RelType) (map[string]*Ty
 
 	// generate table templates
 	for _, t := range tableMap {
-		err = args.ExecuteTemplate(TypeTemplate, t.Name, "", t)
+		// err = args.ExecuteTemplate(TypeTemplate, t.Name, "", t)
+		_, err = GetTableTemplate(t.Name).AssociateTemplate(TypeTemplate, t)
 		if err != nil {
 			return nil, err
 		}
@@ -569,7 +574,8 @@ func (tl TypeLoader) LoadForeignKeys(args *ArgType, tableMap map[string]*Type) (
 
 	// generate templates
 	for _, fk := range fkMap {
-		err = args.ExecuteTemplate(ForeignKeyTemplate, fk.Type.Name, fk.ForeignKey.ForeignKeyName, fk)
+		// err = args.ExecuteTemplate(ForeignKeyTemplate, fk.Type.Name, fk.ForeignKey.ForeignKeyName, fk)
+		_, err = GetTableTemplate(fk.Type.Name).AssociateTemplate(ForeignKeyTemplate, fk)
 		if err != nil {
 			return nil, err
 		}
@@ -664,7 +670,8 @@ func (tl TypeLoader) LoadIndexes(args *ArgType, tableMap map[string]*Type) (map[
 
 	// generate templates
 	for _, ix := range ixMap {
-		err = args.ExecuteTemplate(IndexTemplate, ix.Type.Name, ix.Index.IndexName, ix)
+		// err = args.ExecuteTemplate(IndexTemplate, ix.Type.Name, ix.Index.IndexName, ix)
+		_, err = GetTableTemplate(ix.Type.Name).AssociateTemplate(IndexTemplate, ix)
 		if err != nil {
 			return nil, err
 		}

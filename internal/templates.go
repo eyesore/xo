@@ -11,6 +11,14 @@ import (
 	templates "github.com/eyesore/xo/tplbin"
 )
 
+var (
+	// TableTemplateKeys preservers the order of template creation.  This only matters for args.SingleFile == true
+	TableTemplateKeys = []string{}
+
+	// use a map for easy access to the templates - order is preserved in TableTemplateKeys
+	tableTemplates = map[string]*TableTemplate{}
+)
+
 // TemplateLoader loads templates from the specified name.
 func (a *ArgType) TemplateLoader(name string) ([]byte, error) {
 	// no template path specified
@@ -34,6 +42,22 @@ func (a *ArgType) TemplateSet() *TemplateSet {
 	return a.templateSet
 }
 
+// GetTemplateName constructs the name of the template to pass to the loader.  Note that this will no longer be used as T.Name.
+func (a *ArgType) GetTemplateName(tt TemplateType) string {
+	loaderType := ""
+	if tt != XOTemplate {
+		if a.LoaderType == "oci8" || a.LoaderType == "ora" {
+			// force oracle for oci8 since the oracle driver doesn't recognize
+			// 'oracle' as valid protocol
+			loaderType = "oracle."
+		} else {
+			loaderType = a.LoaderType + "."
+		}
+	}
+
+	return fmt.Sprintf("%s%s.go.tpl", loaderType, tt)
+}
+
 // ExecuteTemplate loads and parses the supplied template with name and
 // executes it with obj as the context.
 func (a *ArgType) ExecuteTemplate(tt TemplateType, name string, sub string, obj interface{}) error {
@@ -52,18 +76,7 @@ func (a *ArgType) ExecuteTemplate(tt TemplateType, name string, sub string, obj 
 		Buf:          new(bytes.Buffer),
 	}
 
-	// build template name
-	loaderType := ""
-	if tt != XOTemplate {
-		if a.LoaderType == "oci8" || a.LoaderType == "ora" {
-			// force oracle for oci8 since the oracle driver doesn't recognize
-			// 'oracle' as valid protocol
-			loaderType = "oracle."
-		} else {
-			loaderType = a.LoaderType + "."
-		}
-	}
-	templateName := fmt.Sprintf("%s%s.go.tpl", loaderType, tt)
+	templateName := a.GetTemplateName(tt)
 
 	// execute template
 	err = a.TemplateSet().Execute(v.Buf, templateName, obj)
@@ -101,4 +114,62 @@ func (ts *TemplateSet) Execute(w io.Writer, name string, obj interface{}) error 
 	}
 
 	return tpl.Execute(w, obj)
+}
+
+// TableTemplate holds the template and associated metadata for a single table's output
+type TableTemplate struct {
+	// T holds all defined associated templates for this table. T.Name should be tablename
+	T *template.Template
+
+	// Args gives us access to the package name, template loader, etc.  TODO move this out of args
+	Args *ArgType
+
+	// Dots maps the component template names to the data object to execute against
+	Dots map[string]interface{}
+
+	// Buf should only be used for single file, I think
+	Buf *bytes.Buffer
+}
+
+// GetTableTemplate returns the TableTemplate that contains the named template, or creates it
+func GetTableTemplate(name string) *TableTemplate {
+	if _, ok := tableTemplates[name]; !ok {
+		tt := &TableTemplate{
+			T:    template.New(name),
+			Args: Args,
+			Dots: map[string]interface{}{},
+			Buf:  new(bytes.Buffer),
+		}
+		tableTemplates[name] = tt
+		TableTemplateKeys = append(TableTemplateKeys, name)
+	}
+
+	return tableTemplates[name]
+}
+
+// AssociateTemplate loads the template for tt and associates it with the TableTemplate.
+// It will eventually be executed against obj
+func (t *TableTemplate) AssociateTemplate(tt TemplateType, obj interface{}) (*template.Template, error) {
+	loaderName := t.Args.GetTemplateName(tt)
+	b, err := t.Args.TemplateLoader(loaderName)
+	if err != nil {
+		return nil, err
+	}
+	templateName := tt.String()
+	out, err := t.T.New(templateName).Funcs(t.Args.NewTemplateFuncs()).Parse(string(b))
+	if err != nil {
+		return nil, err
+	}
+
+	t.Dots[templateName] = obj
+
+	return out, nil
+}
+
+// GetSingleFileData returns the data for the single file template to be executed against.  Type does not matter.
+func GetSingleFileData() interface{} {
+	return struct {
+		Args      *ArgType
+		Templates map[string]*TableTemplate
+	}{Args, tableTemplates}
 }
