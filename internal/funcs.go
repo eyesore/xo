@@ -5,9 +5,9 @@ import (
 	"strings"
 	"text/template"
 
-	"github.com/knq/snaker"
-
 	"github.com/eyesore/xo/models"
+	"github.com/go-openapi/inflect"
+	"github.com/knq/snaker"
 )
 
 // NewTemplateFuncs returns a set of template funcs bound to the supplied args.
@@ -33,6 +33,16 @@ func (a *ArgType) NewTemplateFuncs() template.FuncMap {
 		"hascolumn":          a.hascolumn,
 		"hasfield":           a.hasfield,
 		"getstartcount":      a.getstartcount,
+
+		// inflection helpers
+		// TODO would be cool if helper functions were pluggable...
+		"Camelize":          inflect.Camelize,
+		"CamelizeDownFirst": inflect.CamelizeDownFirst,
+		"Capitalize":        inflect.Capitalize,
+		"Pluralize":         inflect.Pluralize,
+		"Singularize":       inflect.Singularize,
+		"Titleize":          inflect.Titleize,
+		"Underscore":        inflect.Underscore,
 	}
 }
 
@@ -632,7 +642,7 @@ func (a *ArgType) hasfield(fields []*Field, name string) bool {
 	return false
 }
 
-// getstartcount returns a starting count for numbering columsn in queries
+// getstartcount returns a starting count for numbering columns in queries
 func (a *ArgType) getstartcount(fields []*Field, pkFields []*Field) int {
 	return len(fields) - len(pkFields)
 }

@@ -45,7 +45,7 @@ func (a *ArgType) TemplateSet() *TemplateSet {
 // GetTemplateName constructs the name of the template to pass to the loader.  Note that this will no longer be used as T.Name.
 func (a *ArgType) GetTemplateName(tt TemplateType) string {
 	loaderType := ""
-	if tt != XOTemplate {
+	if tt != XOTemplate && tt != XOTable {
 		if a.LoaderType == "oci8" || a.LoaderType == "ora" {
 			// force oracle for oci8 since the oracle driver doesn't recognize
 			// 'oracle' as valid protocol
@@ -124,8 +124,8 @@ type TableTemplate struct {
 	// Args gives us access to the package name, template loader, etc.  TODO move this out of args
 	Args *ArgType
 
-	// Dots maps the component template names to the data object to execute against
-	Dots map[string]interface{}
+	// Dots maps the component template names to the data objects to execute against
+	Dots map[string][]interface{}
 
 	// Buf should only be used for single file, I think
 	Buf *bytes.Buffer
@@ -137,7 +137,7 @@ func GetTableTemplate(name string) *TableTemplate {
 		tt := &TableTemplate{
 			T:    template.New(name),
 			Args: Args,
-			Dots: map[string]interface{}{},
+			Dots: map[string][]interface{}{},
 			Buf:  new(bytes.Buffer),
 		}
 		tableTemplates[name] = tt
@@ -161,7 +161,10 @@ func (t *TableTemplate) AssociateTemplate(tt TemplateType, obj interface{}) (*te
 		return nil, err
 	}
 
-	t.Dots[templateName] = obj
+	if _, ok := t.Dots[templateName]; !ok {
+		t.Dots[templateName] = make([]interface{}, 1)
+	}
+	t.Dots[templateName] = append(t.Dots[templateName], obj)
 
 	return out, nil
 }

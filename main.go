@@ -312,7 +312,8 @@ func writeTypes(args *internal.ArgType) error {
 		obj := internal.GetSingleFileData()
 
 		tName := internal.XOSingleFile.String()
-		b, err := args.TemplateLoader(tName)
+		sfName := tName + ".go.tpl"
+		b, err := args.TemplateLoader(sfName)
 		if err != nil {
 			return err
 		}
