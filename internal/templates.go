@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io"
 	"io/ioutil"
+	"os"
 	"path"
 	"text/template"
 
@@ -21,12 +22,16 @@ var (
 
 // TemplateLoader loads templates from the specified name.
 func (a *ArgType) TemplateLoader(name string) ([]byte, error) {
-	// no template path specified
-	if a.TemplatePath == "" {
-		return templates.Asset(name)
+	if a.TemplatePath != "" {
+		tplPath := path.Join(a.TemplatePath, name)
+		_, err := os.Stat(tplPath)
+		if !os.IsNotExist(err) {
+			// if the template is there, load it, else fall back to asset
+			return ioutil.ReadFile(path.Join(a.TemplatePath, name))
+		}
 	}
 
-	return ioutil.ReadFile(path.Join(a.TemplatePath, name))
+	return templates.Asset(name)
 }
 
 // TemplateSet retrieves the created template set.
