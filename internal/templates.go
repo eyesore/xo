@@ -167,7 +167,7 @@ func (t *TableTemplate) AssociateTemplate(tt TemplateType, obj interface{}) (*te
 	}
 
 	if _, ok := t.Dots[templateName]; !ok {
-		t.Dots[templateName] = make([]interface{}, 1)
+		t.Dots[templateName] = make([]interface{}, 0, 1)
 	}
 	t.Dots[templateName] = append(t.Dots[templateName], obj)
 

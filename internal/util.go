@@ -165,20 +165,26 @@ func (a *ArgType) BuildIndexFuncName(ixTpl *Index) {
 	}
 	funcName = funcName + "By"
 
-	// add param names
+	ixName := fmtIndexName(ixTpl.Index.IndexName, ixTpl.Type.Table.TableName)
+	paramStr := a.IndexParams(ixName, ixTpl.Fields)
+
+	// store resulting name back
+	ixTpl.FuncName = funcName + paramStr
+}
+
+// IndexParams returns the concatentated camel case field names or index name if a.UseIndexName
+func (a *ArgType) IndexParams(ixName string, ixFields []*Field) string {
 	paramNames := []string{}
 
-	ixName := fmtIndexName(ixTpl.Index.IndexName, ixTpl.Type.Table.TableName)
 	if a.UseIndexNames && ixName != "" {
 		paramNames = append(paramNames, ixName)
 	} else {
-		for _, f := range ixTpl.Fields {
+		for _, f := range ixFields {
 			paramNames = append(paramNames, f.Name)
 		}
 	}
 
-	// store resulting name back
-	ixTpl.FuncName = funcName + strings.Join(paramNames, "")
+	return strings.Join(paramNames, "")
 }
 
 // letters for GenRandomID

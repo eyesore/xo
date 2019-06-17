@@ -10,30 +10,44 @@ package {{ .Args.Package }}
 
 {{ end -}}
 
-{{- if .Dots.enum }}{{- range .Dots.enum }}
-{{ template "enum" . }}
-{{ end }} {{- end -}}
+{{- if .Dots.enum -}}
+	{{- range .Dots.enum -}}
+		{{ template "enum" . }}
+	{{ end -}}
+{{- end -}}
 
-{{- if .Dots.proc }}{{- range .Dots.proc }}
-{{ template "proc" .Dots.proc }}
-{{ end }} {{- end -}}
+{{- if .Dots.proc -}}
+	{{- range .Dots.proc -}}
+		{{ template "proc" . }}
+	{{ end -}}
+{{- end -}}
 
-{{- if .Dots.type }}{{- range .Dots.type }}
-{{ template "type" .Dots.type }}
-{{ end }} {{- end -}}
+{{- if .Dots.type -}}
+	{{- range .Dots.type -}}
+		{{ template "type" . }}
+	{{ end -}}
+{{- end -}}
 
-{{- if .Dots.foreignkey }}{{- range .Dots.foreignkey }}
-{{ template "foreignkey" .Dots.foreignkey }}
-{{ end }} {{- end -}}
+{{- if .Dots.foreignkey -}}
+	{{- range .Dots.foreignkey -}}
+		{{ template "foreignkey" . }}
+	{{ end -}}
+{{- end -}}
 
-{{- if .Dots.index }}{{- range .Dots.index }}
-{{ template "index" .Dots.index }}
-{{ end }} {{- end -}}
+{{- if .Dots.index -}}
+	{{- range .Dots.index -}}
+		{{ template "index" . }}
+	{{ end -}}
+{{- end -}}
 
-{{- if .Dots.querytype }}{{- range .Dots.querytype }}
-{{ template "querytype" .Dots.querytype }}
-{{ end }} {{- end -}}
+{{- if .Dots.querytype -}}
+	{{- range .Dots.querytype -}}
+		{{ template "querytype" . }}
+	{{ end -}}
+{{- end -}}
 
-{{- if .Dots.query }}{{- range .Dots.query }}
-{{ template "query" .Dots.query }}
-{{ end }} {{- end -}}
+{{- if .Dots.query -}}
+	{{- range .Dots.query -}}
+		{{ template "query" . }}
+	{{- end -}}
+{{- end }}

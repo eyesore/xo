@@ -34,6 +34,9 @@ func (a *ArgType) NewTemplateFuncs() template.FuncMap {
 		"hasfield":           a.hasfield,
 		"getstartcount":      a.getstartcount,
 
+		// added helpers - TODO, make this pluggable
+		"IndexParams": a.IndexParams,
+
 		// inflection helpers
 		// TODO would be cool if helper functions were pluggable...
 		"Camelize":          inflect.Camelize,
@@ -42,7 +45,7 @@ func (a *ArgType) NewTemplateFuncs() template.FuncMap {
 		"Pluralize":         inflect.Pluralize,
 		"Singularize":       inflect.Singularize,
 		"Titleize":          inflect.Titleize,
-		"Underscore":        inflect.Underscore,
+		"Underscore":        wrapUnderscore,
 	}
 }
 
@@ -645,4 +648,15 @@ func (a *ArgType) hasfield(fields []*Field, name string) bool {
 // getstartcount returns a starting count for numbering columns in queries
 func (a *ArgType) getstartcount(fields []*Field, pkFields []*Field) int {
 	return len(fields) - len(pkFields)
+}
+
+func wrapUnderscore(s string) string {
+	// everyones formatting needs could be so different - func map really needs to be pluggable
+	if s == "ID" {
+		return "id"
+	}
+	if string(s[len(s)-2:]) == "ID" {
+		return inflect.Underscore(strings.TrimSuffix(s, "ID")) + "_id"
+	}
+	return inflect.Underscore(s)
 }
