@@ -1,6 +1,7 @@
 package internal
 
 import (
+	"path"
 	"strconv"
 	"strings"
 	"text/template"
@@ -648,6 +649,16 @@ func (a *ArgType) hasfield(fields []*Field, name string) bool {
 // getstartcount returns a starting count for numbering columns in queries
 func (a *ArgType) getstartcount(fields []*Field, pkFields []*Field) int {
 	return len(fields) - len(pkFields)
+}
+
+// GetFilePath constructs the path to the file for tablename or for the defined filename for singlefile
+func (a *ArgType) GetFilePath(tableName string) string {
+	if a.SingleFile {
+		return a.Filename
+	}
+
+	filename := strings.ToLower(tableName) + a.Suffix
+	return path.Join(a.Path, filename)
 }
 
 func wrapUnderscore(s string) string {

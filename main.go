@@ -8,7 +8,9 @@ import (
 	"errors"
 	"fmt"
 	"io/ioutil"
+	"log"
 	"os"
+	"os/exec"
 	"path"
 	"strings"
 	"text/template"
@@ -232,29 +234,10 @@ func openDB(args *internal.ArgType) error {
 	return nil
 }
 
-// files is a map of filenames to open file handles.
-var files = map[string]*os.File{}
-
-// getFile builds the filepath from the TBuf information, and retrieves the
-// file from files. If the built filename is not already defined, then it calls
-// the os.OpenFile with the correct parameters depending on the state of args.
-func getFile(args *internal.ArgType, tableName string) (*os.File, error) {
+// getFile calls  os.OpenFile on filename with the correct parameters depending on the state of args.
+func getFile(args *internal.ArgType, filename string) (*os.File, error) {
 	var f *os.File
 	var err error
-
-	// determine filename
-	var filename = strings.ToLower(tableName) + args.Suffix
-	if args.SingleFile {
-		filename = args.Filename
-	}
-	filename = path.Join(args.Path, filename)
-
-	// lookup file
-	// TODO - probably remove this file caching, we will only write once per file, I think. DEPRECATED
-	f, ok := files[filename]
-	if ok {
-		return f, nil
-	}
 
 	// default open mode
 	mode := os.O_RDWR | os.O_CREATE | os.O_TRUNC
@@ -263,7 +246,7 @@ func getFile(args *internal.ArgType, tableName string) (*os.File, error) {
 	fi, err := os.Stat(filename)
 	if err == nil && fi.IsDir() {
 		return nil, errors.New("filename cannot be directory")
-	} else if _, ok = err.(*os.PathError); !ok && args.Append {
+	} else if _, ok := err.(*os.PathError); !ok && args.Append {
 		// file exists so append if append is set and not XO type
 		mode = os.O_APPEND | os.O_WRONLY
 	}
@@ -274,10 +257,19 @@ func getFile(args *internal.ArgType, tableName string) (*os.File, error) {
 		return nil, err
 	}
 
-	// store file TODO tj - are we using this?
-	files[filename] = f
-
 	return f, nil
+}
+
+func goimports(fname string) error {
+	fmt.Println("running goimports on file: ", fname)
+	output, err := exec.Command("goimports", "-w", fname).CombinedOutput()
+	if err != nil {
+		// TODO better logging of err
+		log.Println("goimports error:", err)
+		return errors.New(string(output))
+	}
+
+	return nil
 }
 
 func writeTypes(args *internal.ArgType) error {
@@ -288,14 +280,19 @@ func writeTypes(args *internal.ArgType) error {
 		if err != nil {
 			return err
 		}
+		filename := args.GetFilePath(tableTemplate.T.Name())
 		if !args.SingleFile {
 			// write out table template
-			f, err := getFile(args, tableTemplate.T.Name())
+			f, err := getFile(args, filename)
 			if err != nil {
 				return err
 			}
 			err = masterTemplate.Execute(f, tableTemplate)
 			f.Close() // TODO check error?
+			if err != nil {
+				return err
+			}
+			err = goimports(filename)
 			if err != nil {
 				return err
 			}
@@ -322,14 +319,19 @@ func writeTypes(args *internal.ArgType) error {
 		if err != nil {
 			return err
 		}
-
-		f, err := getFile(args, "") // name will be overwritten anyway
+		filename := args.GetFilePath("") // name will be overwritten anyway
+		f, err := getFile(args, filename)
 		if err != nil {
 			return err
 		}
 
 		err = masterTemplate.Execute(f, obj)
 		f.Close() // TODO same error check
+		if err != nil {
+			return err
+		}
+
+		err = goimports(filename)
 		if err != nil {
 			return err
 		}
