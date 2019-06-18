@@ -261,7 +261,6 @@ func getFile(args *internal.ArgType, filename string) (*os.File, error) {
 }
 
 func goimports(fname string) error {
-	fmt.Println("running goimports on file: ", fname)
 	output, err := exec.Command("goimports", "-w", fname).CombinedOutput()
 	if err != nil {
 		// TODO better logging of err
@@ -280,8 +279,9 @@ func writeTypes(args *internal.ArgType) error {
 		if err != nil {
 			return err
 		}
-		filename := args.GetFilePath(tableTemplate.T.Name())
+
 		if !args.SingleFile {
+			filename := args.GetFilePath(tableTemplate.T.Name())
 			// write out table template
 			f, err := getFile(args, filename)
 			if err != nil {

@@ -653,11 +653,11 @@ func (a *ArgType) getstartcount(fields []*Field, pkFields []*Field) int {
 
 // GetFilePath constructs the path to the file for tablename or for the defined filename for singlefile
 func (a *ArgType) GetFilePath(tableName string) string {
+	filename := strings.ToLower(tableName) + a.Suffix
 	if a.SingleFile {
-		return a.Filename
+		filename = a.Filename
 	}
 
-	filename := strings.ToLower(tableName) + a.Suffix
 	return path.Join(a.Path, filename)
 }
 
