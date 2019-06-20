@@ -38,7 +38,7 @@ func (a *ArgType) NewTemplateFuncs() template.FuncMap {
 		// added helpers - TODO, make this pluggable
 		"IndexParams": a.IndexParams,
 
-		// inflection helpers
+		// inflection and formatting helpers
 		// TODO would be cool if helper functions were pluggable...
 		"Camelize":          inflect.Camelize,
 		"CamelizeDownFirst": inflect.CamelizeDownFirst,
@@ -47,6 +47,8 @@ func (a *ArgType) NewTemplateFuncs() template.FuncMap {
 		"Singularize":       inflect.Singularize,
 		"Titleize":          inflect.Titleize,
 		"Underscore":        wrapUnderscore,
+
+		"contains": strings.Contains,
 	}
 }
 
