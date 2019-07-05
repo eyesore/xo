@@ -78,75 +78,75 @@ func MsParseType(args *internal.ArgType, dt string, nullable bool) (int, string,
 		nilVal = "false"
 		typ = "bool"
 		if nullable {
-			nilVal = "sql.NullBool{}"
-			typ = "sql.NullBool"
+			nilVal = "xodeps.NullBool{}"
+			typ = "xodeps.NullBool"
 		}
 
 	case "char", "varchar", "text", "nchar", "nvarchar", "ntext", "smallmoney", "money":
 		nilVal = `""`
 		typ = "string"
 		if nullable {
-			nilVal = "sql.NullString{}"
-			typ = "sql.NullString"
+			nilVal = "xodeps.NullString{}"
+			typ = "xodeps.NullString"
 		}
 
 	case "smallint":
 		nilVal = "0"
 		typ = "int16"
 		if nullable {
-			nilVal = "sql.NullInt64{}"
-			typ = "sql.NullInt64"
+			nilVal = "xodeps.NullInt64{}"
+			typ = "xodeps.NullInt64"
 		}
 	case "int":
 		nilVal = "0"
 		typ = args.Int32Type
 		if nullable {
-			nilVal = "sql.NullInt64{}"
-			typ = "sql.NullInt64"
+			nilVal = "xodeps.NullInt64{}"
+			typ = "xodeps.NullInt64"
 		}
 	case "bigint":
 		nilVal = "0"
 		typ = "int64"
 		if nullable {
-			nilVal = "sql.NullInt64{}"
-			typ = "sql.NullInt64"
+			nilVal = "xodeps.NullInt64{}"
+			typ = "xodeps.NullInt64"
 		}
 
 	case "smallserial":
 		nilVal = "0"
 		typ = "uint16"
 		if nullable {
-			nilVal = "sql.NullInt64{}"
-			typ = "sql.NullInt64"
+			nilVal = "xodeps.NullInt64{}"
+			typ = "xodeps.NullInt64"
 		}
 	case "serial":
 		nilVal = "0"
 		typ = args.Uint32Type
 		if nullable {
-			nilVal = "sql.NullInt64{}"
-			typ = "sql.NullInt64"
+			nilVal = "xodeps.NullInt64{}"
+			typ = "xodeps.NullInt64"
 		}
 	case "bigserial":
 		nilVal = "0"
 		typ = "uint64"
 		if nullable {
-			nilVal = "sql.NullInt64{}"
-			typ = "sql.NullInt64"
+			nilVal = "xodeps.NullInt64{}"
+			typ = "xodeps.NullInt64"
 		}
 
 	case "real":
 		nilVal = "0.0"
 		typ = "float32"
 		if nullable {
-			nilVal = "sql.NullFloat64{}"
-			typ = "sql.NullFloat64"
+			nilVal = "xodeps.NullFloat64{}"
+			typ = "xodeps.NullFloat64"
 		}
 	case "numeric", "decimal":
 		nilVal = "0.0"
 		typ = "float64"
 		if nullable {
-			nilVal = "sql.NullFloat64{}"
-			typ = "sql.NullFloat64"
+			nilVal = "xodeps.NullFloat64{}"
+			typ = "xodeps.NullFloat64"
 		}
 
 	case "binary", "varbinary":
@@ -160,8 +160,8 @@ func MsParseType(args *internal.ArgType, dt string, nullable bool) (int, string,
 		nilVal = "0"
 		typ = "int64"
 		if nullable {
-			nilVal = "sql.NullInt64{}"
-			typ = "sql.NullInt64"
+			nilVal = "xodeps.NullInt64{}"
+			typ = "xodeps.NullInt64"
 		}
 
 	case "interval":

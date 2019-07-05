@@ -241,6 +241,9 @@ func getFile(args *internal.ArgType, filename string) (*os.File, error) {
 
 	// default open mode
 	mode := os.O_RDWR | os.O_CREATE | os.O_TRUNC
+	if !args.Overwrite {
+		mode = mode | os.O_EXCL
+	}
 
 	// stat file to determine if file already exists
 	fi, err := os.Stat(filename)
@@ -285,6 +288,10 @@ func writeTypes(args *internal.ArgType) error {
 			// write out table template
 			f, err := getFile(args, filename)
 			if err != nil {
+				if os.IsExist(err) {
+					log.Println("not overwriting existing file: ", filename)
+					continue
+				}
 				return err
 			}
 			err = masterTemplate.Execute(f, tableTemplate)

@@ -21,6 +21,9 @@ type ArgType struct {
 	// Append toggles to append to the existing types.
 	Append bool `arg:"-a,help:append to existing files"`
 
+	// Overwrite toggles to overwrite files if they exist.  Defaults to false.
+	Overwrite bool `arg:"--overwrite,help:overwrite existing files"`
+
 	// Suffix is the output suffix for filenames.
 	Suffix string `arg:"-f,help:output file suffix"`
 

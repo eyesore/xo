@@ -94,30 +94,30 @@ func OrParseType(args *internal.ArgType, dt string, nullable bool) (int, string,
 		nilVal = "0"
 		typ = "int16"
 		if nullable {
-			nilVal = "sql.NullInt64{}"
-			typ = "sql.NullInt64"
+			nilVal = "xodeps.NullInt64{}"
+			typ = "xodeps.NullInt64"
 		}
 	case "integer":
 		nilVal = "0"
 		typ = args.Int32Type
 		if nullable {
-			nilVal = "sql.NullInt64{}"
-			typ = "sql.NullInt64"
+			nilVal = "xodeps.NullInt64{}"
+			typ = "xodeps.NullInt64"
 		}
 	case "longinteger":
 		nilVal = "0"
 		typ = "int64"
 		if nullable {
-			nilVal = "sql.NullInt64{}"
-			typ = "sql.NullInt64"
+			nilVal = "xodeps.NullInt64{}"
+			typ = "xodeps.NullInt64"
 		}
 
 	case "float", "shortdecimal":
 		nilVal = "0.0"
 		typ = "float32"
 		if nullable {
-			nilVal = "sql.NullFloat64{}"
-			typ = "sql.NullFloat64"
+			nilVal = "xodeps.NullFloat64{}"
+			typ = "xodeps.NullFloat64"
 		}
 
 	case "number", "decimal":
@@ -125,14 +125,14 @@ func OrParseType(args *internal.ArgType, dt string, nullable bool) (int, string,
 		if 0 < precision && precision < 18 && scale > 0 {
 			typ = "float64"
 			if nullable {
-				nilVal = "sql.NullFloat64{}"
-				typ = "sql.NullFloat64"
+				nilVal = "xodeps.NullFloat64{}"
+				typ = "xodeps.NullFloat64"
 			}
 		} else if 0 < precision && precision <= 19 && scale == 0 {
 			typ = "int64"
 			if nullable {
-				nilVal = "sql.NullInt64{}"
-				typ = "sql.NullInt64"
+				nilVal = "xodeps.NullInt64{}"
+				typ = "xodeps.NullInt64"
 			}
 		} else {
 			nilVal = `""`
@@ -157,8 +157,8 @@ func OrParseType(args *internal.ArgType, dt string, nullable bool) (int, string,
 		nilVal = "false"
 		typ = "bool"
 		if nullable {
-			nilVal = "sql.NullBool{}"
-			typ = "sql.NullBool"
+			nilVal = "xodeps.NullBool{}"
+			typ = "xodeps.NullBool"
 		}
 	}
 

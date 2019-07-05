@@ -577,7 +577,7 @@ func (a *ArgType) convext(prefix string, f *Field, t *Field) string {
 	}
 
 	ft := f.Type
-	if strings.HasPrefix(ft, "sql.Null") {
+	if strings.HasPrefix(ft, "xodeps.Null") {
 		expr = expr + "." + f.Type[8:]
 		ft = strings.ToLower(f.Type[8:])
 	}
