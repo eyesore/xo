@@ -14,4 +14,5 @@ require (
 	github.com/xo/dburl v0.0.0-20181118001949-f3ca07bd6afc
 	github.com/xo/xo v0.0.0-20190105221319-1a94fa516029
 	github.com/xo/xoutil v0.0.0-20171112033149-46189f4026a5
+	gopkg.in/rana/ora.v4 v4.1.15
 )

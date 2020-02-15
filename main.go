@@ -17,6 +17,7 @@ import (
 
 	"github.com/eyesore/xo/internal"
 	"github.com/eyesore/xo/models"
+	"github.com/go-openapi/inflect"
 	"github.com/xo/dburl"
 
 	arg "github.com/alexflint/go-arg"
@@ -284,7 +285,7 @@ func writeTypes(args *internal.ArgType) error {
 		}
 
 		if !args.SingleFile {
-			filename := args.GetFilePath(tableTemplate.T.Name())
+			filename := args.GetFilePath(inflect.Underscore(tableTemplate.T.Name()))
 			// write out table template
 			f, err := getFile(args, filename)
 			if err != nil {
@@ -299,10 +300,14 @@ func writeTypes(args *internal.ArgType) error {
 			if err != nil {
 				return err
 			}
-			err = goimports(filename)
-			if err != nil {
-				return err
+
+			if !args.SkipGoImports {
+				err = goimports(filename)
+				if err != nil {
+					return err
+				}
 			}
+
 			continue
 		}
 		// execute the tt into its own buffer
@@ -338,9 +343,11 @@ func writeTypes(args *internal.ArgType) error {
 			return err
 		}
 
-		err = goimports(filename)
-		if err != nil {
-			return err
+		if !args.SkipGoImports {
+			err = goimports(filename)
+			if err != nil {
+				return err
+			}
 		}
 	}
 

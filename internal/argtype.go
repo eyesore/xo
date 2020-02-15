@@ -27,8 +27,11 @@ type ArgType struct {
 	// Suffix is the output suffix for filenames.
 	Suffix string `arg:"-f,help:output file suffix"`
 
-	// SingleFile when toggled changes behavior so that output is to one f ile.
+	// SingleFile when toggled changes behavior so that output is to one file.
 	SingleFile bool `arg:"--single-file,help:toggle single file output"`
+
+	// SkipGoImports when toggled skips goimports in process. Defaults to false.
+	SkipGoImports bool `arg:"--skip-goimports,help:skip go imports"`
 
 	// Package is the name used to generate package headers. If not specified,
 	// the name of the output directory will be used instead.
